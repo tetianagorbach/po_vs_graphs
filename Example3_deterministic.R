@@ -27,11 +27,12 @@ v0 <- ifelse(z0 < 2, 0, 1)
 y1 <- 4 + v1 + rnorm(n, 0, 1)
 y0 <- 2 + v0 + rnorm(n, 0, 1)
 # Average treatment effect is equal to total effect of Ey1 - Ey0 = 4 + Ev1 - (2 - Ev0) = 4 + 1 - 2 - 0.5 = 2.5
+# Ev1 = 2*P(z1>3) + 0P(z1<3) = 2*0.5+0*0.5= 1
 mean(y1) - mean(y0)
 # Observed variables
-y <- ifelse(A == 1, y1, y0)
-z <- ifelse(A == 1, z1, z0)
-v <- ifelse(A == 1, v1, v0)
+y <- ifelse(a == 1, y1, y0)
+z <- ifelse(a == 1, z1, z0)
+v <- ifelse(a == 1, v1, v0)
 
 # Conditional independence properties of the counterfactuals cannot be depicted in a SWIG
 # Y(t) indep V(t)|M(t)
@@ -56,4 +57,14 @@ plot(cpdag2)
 ci.test(y1, z1, v1) # y1 independent of z1 given v1
 
 # Estimate the ATE --------------------------------------------------------
-lm(y ~ a)
+summary(lm(y ~ a)) # back-door
+
+lm(y ~ v  +  a)[["coefficients"]][["v"]]* # Baron and Kenny
+lm(v~a)[["coefficients"]][["a"]] + 
+lm(y ~ v  +  a)[["coefficients"]][["a"]] 
+
+
+lm(y ~ z  +  a)[["coefficients"]][["z"]]* # Baron and Kenny using z
+  lm(z ~ a)[["coefficients"]][["a"]] + 
+  lm(y ~ z  +  a)[["coefficients"]][["a"]] 
+
