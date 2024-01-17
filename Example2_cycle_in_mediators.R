@@ -1,6 +1,5 @@
 # Generate data for a model with a cycle for which unconfoundness is fulfilled
-# a binary treatment, two confounders with a cyclic relationship, continuous outcome
-# Graph is define by paths: c1 -> treat, c2 -> treat, c1 -> c2, c2 -> c1, c1 -> Y, c2 -> Y, treat -> Y
+# a->z1->y, z1->z2, z2->z1.
 library(bnlearn)
 
 # Generate data -----------------------------------------------------------
@@ -23,24 +22,20 @@ z11 <- (3+alpha*error[ ,2] + error[ ,1])/(1 - alpha^2)
 z12 <-  alpha * z11 + error[,2]
 z01 <- (alpha*error[ ,3] + error[ ,4])/(1 - alpha^2)
 z02 <- alpha * z01 + error[,3]
+
+# Observed mediator
 z1 <- ifelse(a==1, z11, z01) 
 z2 <- ifelse(a==1, z12, z02) 
-  
-# Generate binary treatment that depends on c1 and c2
 
 y1 <- 4 + z11  + error[, 5]
 y0 <- 2 + z01  + error[, 6]
-# Average treatment effect is equal to total effect of Ey1 - Ey0 = 4 + Ec1 + EC0 - (2 - Ec1 - EC0) = 4  - 2 = 2
+# Average treatment effect is 
 mean(y1) - mean(y0) 
-# Observed variables
+# Observed  outcome
 y <- ifelse(a == 1, y1, y0)
 
-
-
-# Estimate the ATE --------------------------------------------------------
+# Estimate the ATE 
 lm(y ~  a)
-lm(y ~ z1 +  a)
 
-lm(y ~ z1 + z2 + a)
-lm(z1 ~ a)
+
 
