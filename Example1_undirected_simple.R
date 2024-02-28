@@ -19,17 +19,20 @@ sigmaf <- function(rho) {
 }
 # We consider an example with nine variables.
 # The clustered graph for the example can be presented as a DAG as follows
-# A -> Y, Z -> A, Z -> Y
-# Here A is a univariate treatment (binary) and
-# Z = (Z1,Z2,Z3,Z4) and Y = (Y1,Y2,Y3,Y4) are four-variate variables (clusters)
+# a -> y, c-> a, c -> y
+# Here a is a univariate binary treatment, y is the observed outcome,  and
+# C = (c1,c2,c3,c4) is a four-variate variables (clusters)
 # that have the diamond dependency structure. It is known (and can be checked)
 # that this structure cannot be presented as a DAG.
+
 # Generate data -----------------------------------------------------------
+# Set a seed for reproducibility
 set.seed(2112023)
+# Set the sample size
 n <- 1000000
 
-# Generate observed  4-variate confounders with a diamnond dependency structure  
-# Z1 - Z2, Z1 - Z3, Z3 - Z4, Z2 - Z4
+# Generate observed  4-variate confounders with a diamnond dependency structure
+# c1 - c2, c1 - c3, c3 - c4, c2 - c4
 covariance_diamond <- sigmaf(0.6)
 confounders <- rmvnorm(n, sigma = covariance_diamond)
 c1 <- confounders[, 1]
@@ -37,20 +40,34 @@ c2 <- confounders[, 2]
 c3 <- confounders[, 3]
 c4 <- confounders[, 4]
 # Checking that the structure is indeed a diamond structure.
-# In theory Z1 is independent of Z4 given Z2 and Z3:
-ci.test(c1, c4, data.frame(confounders[,2], confounders[,3]))
-print(covariance_diamond[c(1, 4), c(1, 4)] - covariance_diamond[c(1, 4), c(2, 3)] %*% 
-        solve(covariance_diamond[c(2, 3), c(2, 3)]) %*% covariance_diamond[c(2, 3), c(1, 4)])
+# In theory c1 is independent of c4 given c2 and c3:
+ci.test(c1, c4, data.frame(confounders[, 2], confounders[, 3]))
+print(covariance_diamond[c(1, 4), c(1, 4)] - covariance_diamond[c(1, 4), c(2, 3)] %*%
+  solve(covariance_diamond[c(2, 3), c(2, 3)]) %*% covariance_diamond[c(2, 3), c(1, 4)])
 # Empirical (by default pcor conditions on all other variables)
 print(pcor(confounders))
 # We can see that Z has the diamond dependency structure.
 
-# Treatment A depends on C1 and C2 via the logit link
-a <- 1 * (runif(n) > exp(c1 + c2) / (1 + exp(c1 + c2)))
+# Generate binary treatment A  that depends on c1 and c4 via the logit link
+a <- rbinom(n, size = 1, prob = plogis(c1 + c4))
 
-a <- rbinom(n, size = 1, prob = plogis(c1 + c2))
-y1 <- 4 + c1 + c2 + rnorm(n, 0, 1)
-y0 <- 2 + c1 + c2 + rnorm(n, 0, 1)
-# Average treatment effect is equal to total effect of Ey1 - Ey0 = 4 + Ec1 + EC0 - (2 - Ec1 - EC0) = 4  - 2 = 2
-mean(y1) - mean(y0) 
+# Generate potential outcomes
+errors <- rmvnorm(n, sigma = matrix(c(1, 0, 0, 1), nrow = 2))
+y1 <- 4 + c1 + c4 + errors[, 1]
+y0 <- 2 + c1 + c4 + errors[, 2]
+# Define the observed outcome
+y <- ifelse(a == 1, y1, y0)
+
+# Average treatment effect is equal to total effect of Ey1 - Ey0 = 4 + Ec1 + Ec4 - (2 + Ec1 + Ec4) = 4 - 2 = 2
+mean(y1) - mean(y0)
+
+
+# Check ignorability -----------------------------------------
+ci.test(as.numeric(y0), as.numeric(a), data.frame(c1, c4))
+ci.test(as.numeric(y1), as.numeric(a), data.frame(c1, c4))
+
+# Average causal effect can be consistently estimated by a linear regression: --------
+lm(y ~ a + c1 + c4)
+
+
 
