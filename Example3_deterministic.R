@@ -55,5 +55,6 @@ ci.test(y1, as.numeric(a), data.frame(c2)) # y1 is independent of a given c2: we
 
 # Average causal effect can be consistently estimated by a linear regression: --------
 lm(y ~ a + c2)
+lm(y ~ a + c1 + c2)
 
 

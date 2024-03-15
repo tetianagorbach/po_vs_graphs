@@ -49,12 +49,12 @@ print(pcor(confounders))
 # We can see that Z has the diamond dependency structure.
 
 # Generate binary treatment A  that depends on c1 and c4 via the logit link
-a <- rbinom(n, size = 1, prob = plogis(c1 + c4))
+a <- rbinom(n, size = 1, prob = plogis(c2))
 
 # Generate potential outcomes
 errors <- rmvnorm(n, sigma = matrix(c(1, 0, 0, 1), nrow = 2))
-y1 <- 4 + c1 + c4 + errors[, 1]
-y0 <- 2 + c1 + c4 + errors[, 2]
+y1 <- 4 + c2 + errors[, 1]
+y0 <- 2 + c2 + errors[, 2]
 # Define the observed outcome
 y <- ifelse(a == 1, y1, y0)
 
@@ -67,7 +67,7 @@ ci.test(as.numeric(y0), as.numeric(a), data.frame(c1, c4))
 ci.test(as.numeric(y1), as.numeric(a), data.frame(c1, c4))
 
 # Average causal effect can be consistently estimated by a linear regression: --------
-lm(y ~ a + c1 + c4)
+lm(y ~ a + c1 + c2 + c3 + c4)
 
 
 
