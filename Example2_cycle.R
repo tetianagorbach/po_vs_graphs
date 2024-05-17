@@ -22,15 +22,15 @@ confouders <- cbind(error1, error2) %*% inverse_i_b # n*2 matrix of confounders 
 c1 <- confouders[, 1]
 c2 <- confouders[, 2]
 # Generate binary treatment that depends on c2
-a <- rbinom(n, size = 1, prob = plogis(c2))
+a <- rbinom(n, size = 1, prob = plogis(c1 + c2))
 
 # Generate potential outcomes
-y1 <- 4 + c2 + errors[, 3]
-y0 <- 2 + c2 + errors[, 4]
+y1 <- 4 + c1 + c2 + errors[, 3]
+y0 <- 2 + c1 + c2 + errors[, 4]
 
 # Generate observed outcome
 y <- ifelse(a == 1, y1, y0)
-# Average treatment effect is equal to total effect of Ey1 - Ey0 = 4 +  Ec2 - (2 + Ec2) = 4 - 2 = 2
+# Average treatment effect is equal to total effect of Ey1 - Ey0 = 4 +  Ec1 + Ec2 - (2 + Ec1 + Ec2) = 4 - 2 = 2
 mean(y1) - mean(y0) 
 
 
@@ -54,10 +54,9 @@ plot(cpdag2)
 
 
 # Check ignorability  -----------------------------------------------------
-ci.test(y0, as.numeric(a), data.frame(c2)) # y0 is independent of a given c2: weak unconfoundedness is fulfilled
-ci.test(y1, as.numeric(a), data.frame(c2)) # y1 is independent of a given c2: weak unconfoundedness is fulfilled
+ci.test(y0, as.numeric(a), data.frame(c1, c2)) # y0 is independent of a given c1, c2: weak unconfoundedness is fulfilled
+ci.test(y1, as.numeric(a), data.frame(c1, c2)) # y1 is independent of a given c1, c2: weak unconfoundedness is fulfilled
 
 # Average causal effect can be consistently estimated by a linear regression: --------
-lm(y ~ a + c2)
 lm(y ~ a + c1 + c2)
 

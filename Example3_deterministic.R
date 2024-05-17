@@ -20,11 +20,11 @@ errors <- rmvnorm(n, sigma = diag(3))
 c1 <- 3 + errors[, 1]
 c2 <- 2*as.numeric(c1 >= 3)
 # Generate binary treatment that depends on c2
-a <- rbinom(n, size = 1, prob = plogis(c2))
+a <- rbinom(n, size = 1, prob = plogis(c1 + c2))
 
 # Generate potential outcomes
-y1 <- 4 + c2 + errors[, 2]
-y0 <- 2 + c2 + errors[, 3]
+y1 <- 4 + c1 + c2 + errors[, 2]
+y0 <- 2 + c1 + c2 + errors[, 3]
 
 # Generate observed outcome
 y <- ifelse(a == 1, y1, y0)
@@ -51,11 +51,10 @@ plot(cpdag2)
 
 
 # Check ignorability ------------------------------------------------------
-ci.test(y0, as.numeric(a), data.frame(c2)) # y0 is independent of a given c2: weak unconfoundedness is fulfilled
-ci.test(y1, as.numeric(a), data.frame(c2)) # y1 is independent of a given c2: weak unconfoundedness is fulfilled
+ci.test(y0, as.numeric(a), data.frame(c1, c2)) # y0 is independent of a given c1, c2: weak unconfoundedness is fulfilled
+ci.test(y1, as.numeric(a), data.frame(c1, c2)) # y1 is independent of a given c1, c2: weak unconfoundedness is fulfilled
 
 # Average causal effect can be consistently estimated by a linear regression: --------
-lm(y ~ a + c2)
 lm(y ~ a + c1 + c2)
 
 
