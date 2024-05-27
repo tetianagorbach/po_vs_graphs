@@ -36,6 +36,7 @@ mean(y1) - mean(y0)
 # Generate observed outcome
 y <- ifelse(a == 1, y1, y0)
 
+ci.test(as.numeric(y), as.numeric(a))
 ci.test(y0, as.numeric(a), as.numeric(c)) # unconfoundness is not fulfilled
 ci.test(y1, as.numeric(a), as.numeric(c)) 
 ci.test(as.numeric(u1), as.numeric(c), as.numeric(u2)) # c depends on u1 and u2
