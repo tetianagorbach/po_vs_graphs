@@ -10,20 +10,20 @@ library(bnlearn)
 # Set a seed for reproducibility
 set.seed(292377111)
 # Set the sample size
-n <- 1000000
+n <- 10000000
 # Define confounders c1, c2 with a deterministic relationship
 errors <- rmvnorm(n, sigma = diag(4))
 # Generate confounders
-u1 <- rnorm(n)
-u2 <-  rnorm(n)
-c1 <- rbinom(n, size = 1, prob = plogis(3 + u1 + u2)) #3 + u1 + u2 +   errors[, 1]
-c2 <- rbinom(n, size = 1, prob = plogis(1 + u1 +  c1)) # 1 + u1 +  c1 + errors[, 2]
+u1 <- errors[, 1]
+u2 <-  errors[, 2]
+c1 <- rbinom(n, size = 1, prob = plogis(3 + u1 + u2)) # 3 + u1 + u2 +   errors[, 1]
+c2 <- rbinom(n, size = 1, prob = plogis(1 + c1)) # 1 + u1 +  c1 + errors[, 2]
 # Generate binary treatment that depends on c2
-a <- rbinom(n, size = 1, prob = plogis(c1 + c2 + u1))
+a <- rbinom(n, size = 1, prob = plogis(c2 + u1))
 
 # Generate potential outcomes
-y1 <- 4 + c1 + u2 + errors[, 3]
-y0 <- 2 + c1 + u2 + errors[, 4]
+y1 <- 4 + u2 + errors[, 3]
+y0 <- 2 + u2 + errors[, 4]
 
 
 # Generate observed outcome
@@ -59,8 +59,7 @@ ci.test(y0, as.numeric(a), data.frame(as.numeric(c1), as.numeric(c2))) # y0 is d
 ci.test(y1, as.numeric(a), data.frame(as.numeric(c1), as.numeric(c2))) # y1 is dependent on a given c1, c2: weak unconfoundedness is fulfilled
 
 
-
-
+mean(y1) -mean(y0)
 # Average causal effect estimated through the back-door adjustment
 lm(y ~ a + c1 + c2)
 
@@ -78,8 +77,9 @@ a <- rbinom(n, size = 1, prob = 0.4*c2 + 0.4*v)
 y <- rbinom(n, size = 1, prob = 0.4*a + 0.4*u)
 
 
-# EY(1)
-mean(y[a==1])  # ? is completely correct?
+# EY(1) = P(Y=1|do(X)=1)
+(0.2 + 0.4)^1*(0.8 - 0.4)^(1-1)
+
 
 # EY(1) estimate using the identification and c2=1
 (mean(y[c1 == 0 & c2 == 1 & a == 1]) * mean(a[c1 == 0 & c2 == 1]) * (1 - mean(c1)) +
@@ -92,7 +92,7 @@ mean(y[a==1])  # ? is completely correct?
   (mean(a[c1 == 0 & c2 == 0]) * (1 - mean(c1)) + mean(a[c1 == 1 & c2 == 0]) * mean(c1))
 
 # EY(0)
-mean(y[a==0]) 
+(0.2 + 0.4*0)^1*(0.8 - 0.4*0)^(1-1)
 
 # EY(0) estimate using the identification and c2 =1
 (mean(y[c1 == 0 & c2 == 1 & a == 0]) * (1-mean(a[c1 == 0 & c2 == 1])) * (1 - mean(c1)) +
