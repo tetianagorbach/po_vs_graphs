@@ -17,7 +17,7 @@ errors <- rmvnorm(n, sigma = diag(4))
 u1 <- errors[, 1]
 u2 <-  errors[, 2]
 c1 <- rbinom(n, size = 1, prob = plogis(3 + u1 + u2)) # 3 + u1 + u2 +   errors[, 1]
-c2 <- rbinom(n, size = 1, prob = plogis(1 + c1)) # 1 + u1 +  c1 + errors[, 2]
+c2 <- rbinom(n, size = 1, prob = plogis(1 + c1)) # 1 +  c1 + errors[, 2]
 # Generate binary treatment that depends on c2
 a <- rbinom(n, size = 1, prob = plogis(c2 + u1))
 
