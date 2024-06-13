@@ -12,12 +12,17 @@ set.seed(292377111)
 # Set the sample size
 n <- 1000000
 # Define confounders c1, c2 with a deterministic relationship
-errors <- rmvnorm(n, sigma = diag(8))
-# Generate confounders
-u_z_c1 <- errors[, 1]
-u_c1_c3 <- errors[, 2]
-u_a_c3 <- errors[, 3]
-u_a_ya <- errors[, 4]
+# errors <- rmvnorm(n, sigma = diag(8))
+# # Generate confounders
+# u_z_c1 <- errors[, 1]
+# u_c1_c3 <- errors[, 2]
+# u_a_c3 <- errors[, 3]
+# u_a_ya <- errors[, 4]
+
+u_z_c1 <- rbinom(n, size = 1, prob = 0.5)
+u_c1_c3 <- rbinom(n, size = 1, prob = 0.5)
+u_a_c3 <- rbinom(n, size = 1, prob = 0.5)
+u_a_ya <- rbinom(n, size = 1, prob = 0.5)
 c1 <- rbinom(n, size = 1, prob = plogis(u_z_c1 + u_c1_c3)) #
 c2 <- rbinom(n, size = 1, prob = plogis(1 + c1)) #
 c3 <- rbinom(n, size = 1, prob = plogis(1 + c2 + u_a_c3 + u_c1_c3))
@@ -149,9 +154,8 @@ g5_y_a_z_c2_c3 <- function(y_value, a_value, z_value, c2_value, c3_value) {
 }
 
 # Initialize the sum
-identification_sum <- function(c2_value_def){
+identification_sum <- function(c2_value_def, y_value_def ){
   sum_f <- 0
-  y_value_def <- 1
   
   # Loop over all combinations of a and z in {0, 1}
   for (a_value in c(0, 1)) {
@@ -178,12 +182,12 @@ identification_sum <- function(c2_value_def){
   sum_f
 }
 
-1/g1_a_c2(a_value = 1, c2_value = 1) * identification_sum(c2_value_def = 1) # should be close to mean(y1)
-1/g1_a_c2(a_value = 1, c2_value = 0) * identification_sum(c2_value_def = 0) # should be close to mean(y1)
+1/g1_a_c2(a_value = 1, c2_value = 1) * identification_sum(c2_value_def = 1, y_value_def = 1) # should be close to mean(y1)
+1/g1_a_c2(a_value = 1, c2_value = 0) * identification_sum(c2_value_def = 0, y_value_def = 1) # should be close to mean(y1)
 mean(y1)
 
-1/g1_a_c2(a_value = 0, c2_value = 1) * identification_sum(c2_value_def = 1) # should be close to mean(y0)
-1/g1_a_c2(a_value = 0, c2_value = 0) * identification_sum(c2_value_def = 0) # should be close to mean(y0)
+1/g1_a_c2(a_value = 0, c2_value = 1) * identification_sum(c2_value_def = 1, y_value_def = 0) # should be close to mean(y0)
+1/g1_a_c2(a_value = 0, c2_value = 0) * identification_sum(c2_value_def = 0, y_value_def = 0) # should be close to mean(y0)
 mean(y0)
 
 
