@@ -9,6 +9,7 @@ library(bnlearn)
 # Generate data -----------------------------------------------------------
 # Set a seed for reproducibility
 set.seed(292377111)
+set.seed(0)
 # Set the sample size
 n <- 1000000
 # Define confounders c1, c2 with a deterministic relationship
@@ -156,8 +157,7 @@ g5_y_a_z_c2_c3 <- function(y_value, a_value, z_value, c2_value, c3_value) {
 # Initialize the sum
 identification_sum <- function(c2_value_def, y_value_def ){
   sum_f <- 0
-  
-  # Loop over all combinations of a and z in {0, 1}
+  # Loop over all combinations of a, z and c3 in {0, 1}
   for (a_value in c(0, 1)) {
     for (z_value in c(0, 1)) {
       for (c3_value in c(0, 1)){
