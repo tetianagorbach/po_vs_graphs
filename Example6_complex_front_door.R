@@ -10,7 +10,7 @@ library(bnlearn)
 # Set a seed for reproducibility
 set.seed(292377111)
 # Set the sample size
-n <- 10000
+n <- 1000000
 # Define confounders c1, c2 with a deterministic relationship
 errors <- rmvnorm(n, sigma = diag(8))
 # Generate confounders
@@ -43,7 +43,11 @@ mean(y1)
 # EY(0)
 mean(y0)
 
-
+# df2 <- as.data.frame(cbind(a=as.numeric(a), c1=as.numeric(c1), c2=as.numeric(c2),
+#                            c3 = as.numeric(c3), z = as.numeric(z), y = as.numeric(y)))
+# cpdag2 <- pc.stable(df2)
+# # Plot the graph
+# plot(cpdag2)
 
 # Estimation --------------------------------------------------------------
 pc1 <- function(c1_value) {
@@ -145,36 +149,41 @@ g5_y_a_z_c2_c3 <- function(y_value, a_value, z_value, c2_value, c3_value) {
 }
 
 # Initialize the sum
-sum_f <- 0
-y_value_def <- 1
-c2_value_def <-  0
-
-# Loop over all combinations of a and z in {0, 1}
-for (a_value in c(0, 1)) {
-  for (z_value in c(0, 1)) {
-    for (c3_value in c(0,1)){
-      sum_f <- sum_f + g5_y_a_z_c2_c3(y_value = y_value_def, 
-                                      a_value = a_value, 
-                                      z_value = z_value, 
-                                      c2_value = c2_value_def, 
-                                      c3_value = c3_value)*
-        g4_a_c2_c3(a_value = a_value,
-                   c2_value = c2_value_def, 
-                   c3_value = c3_value)* 
-        g2_a_z_c2(a_value = a_value, 
-                  z_value = z_value, 
-                  c2_value = c2_value_def)/
-        g3_a_z_c2_c3(a_value = a_value, 
-                     z_value = z_value, 
+identification_sum <- function(c2_value_def){
+  sum_f <- 0
+  y_value_def <- 1
+  
+  # Loop over all combinations of a and z in {0, 1}
+  for (a_value in c(0, 1)) {
+    for (z_value in c(0, 1)) {
+      for (c3_value in c(0, 1)){
+        sum_f <- sum_f + g5_y_a_z_c2_c3(y_value = y_value_def, 
+                                        a_value = a_value, 
+                                        z_value = z_value, 
+                                        c2_value = c2_value_def, 
+                                        c3_value = c3_value)*
+          g4_a_c2_c3(a_value = a_value,
                      c2_value = c2_value_def, 
-                     c3_value = c3_value) 
+                     c3_value = c3_value)* 
+          g2_a_z_c2(a_value = a_value, 
+                    z_value = z_value, 
+                    c2_value = c2_value_def)/
+          g3_a_z_c2_c3(a_value = a_value, 
+                       z_value = z_value, 
+                       c2_value = c2_value_def, 
+                       c3_value = c3_value) 
+      }
     }
   }
+  sum_f
 }
 
-1/g1_a_c2(a_value = 1, c2_value = c2_value_def)*sum_f # should be close to mean(y1)
+1/g1_a_c2(a_value = 1, c2_value = 1) * identification_sum(c2_value_def = 1) # should be close to mean(y1)
+1/g1_a_c2(a_value = 1, c2_value = 0) * identification_sum(c2_value_def = 0) # should be close to mean(y1)
 mean(y1)
-1/g1_a_c2(a_value = 0, c2_value = c2_value_def)*sum_f # should be close to mean(y0)
+
+1/g1_a_c2(a_value = 0, c2_value = 1) * identification_sum(c2_value_def = 1) # should be close to mean(y0)
+1/g1_a_c2(a_value = 0, c2_value = 0) * identification_sum(c2_value_def = 0) # should be close to mean(y0)
 mean(y0)
 
 
