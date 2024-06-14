@@ -12,7 +12,6 @@ set.seed(292377111)
 set.seed(0)
 # Set the sample size
 n <- 1000000
-# Define confounders c1, c2 with a deterministic relationship
 # errors <- rmvnorm(n, sigma = diag(8))
 # # Generate confounders
 # u_z_c1 <- errors[, 1]
