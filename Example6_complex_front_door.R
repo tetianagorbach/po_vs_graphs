@@ -154,39 +154,42 @@ g5_y_a_z_c2_c3 <- function(y_value, a_value, z_value, c2_value, c3_value) {
 }
 
 # Initialize the sum
-identification_sum <- function(c2_value_def, y_value_def ){
-  sum_f <- 0
+identification_sum <- function(a_value_def, c2_value_def, y_value_def ){
+  sum_over_a <- 0
+  sum_over_z_c3 <- 0
   # Loop over all combinations of a, z and c3 in {0, 1}
-  for (a_value in c(0, 1)) {
     for (z_value in c(0, 1)) {
       for (c3_value in c(0, 1)){
-        sum_f <- sum_f + g5_y_a_z_c2_c3(y_value = y_value_def, 
+        for (a_value in c(0, 1)) {
+        sum_over_a <- sum_over_a + g5_y_a_z_c2_c3(y_value = y_value_def, 
                                         a_value = a_value, 
                                         z_value = z_value, 
                                         c2_value = c2_value_def, 
                                         c3_value = c3_value)*
           g4_a_c2_c3(a_value = a_value,
                      c2_value = c2_value_def, 
-                     c3_value = c3_value)* 
-          g2_a_z_c2(a_value = a_value, 
-                    z_value = z_value, 
-                    c2_value = c2_value_def)/
+                     c3_value = c3_value)/
           g3_a_z_c2_c3(a_value = a_value, 
                        z_value = z_value, 
                        c2_value = c2_value_def, 
                        c3_value = c3_value) 
+        }
+        sum_over_z_c3 <- sum_over_z_c3 + sum_over_a*g2_a_z_c2(a_value = a_value_def,
+                                                              z_value = z_value, 
+                                                              c2_value = c2_value_def)
       }
-    }
+      
   }
-  sum_f
+  sum_over_z_c3/g1_a_c2(a_value = a_value_def, 
+                        c2_value = c2_value_def)
 }
 
-1/g1_a_c2(a_value = 1, c2_value = 1) * identification_sum(c2_value_def = 1, y_value_def = 1) # should be close to mean(y1)
-1/g1_a_c2(a_value = 1, c2_value = 0) * identification_sum(c2_value_def = 0, y_value_def = 1) # should be close to mean(y1)
+identification_sum(a_value_def = 1, c2_value_def = 1, y_value_def = 1) # should be close to mean(y1)
+identification_sum(a_value_def = 1, c2_value_def = 0, y_value_def = 1) # should be close to mean(y1)
 mean(y1)
 
-1/g1_a_c2(a_value = 0, c2_value = 1) * identification_sum(c2_value_def = 1, y_value_def = 0) # should be close to mean(y0)
-1/g1_a_c2(a_value = 0, c2_value = 0) * identification_sum(c2_value_def = 0, y_value_def = 0) # should be close to mean(y0)
+identification_sum(a_value_def = 0, c2_value_def = 1, y_value_def = 1) # should be close to mean(y0)
+identification_sum(a_value_def = 0, c2_value_def = 0, y_value_def = 1) # should be close to mean(y0)
 mean(y0)
 
 
