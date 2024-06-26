@@ -1,8 +1,8 @@
 # Author: Juha Karvanen/Tetiana Gorbach
 # Date: 2024-05-17
-# This code presents an example of a DAg with a trpdoor variable
+# This code presents an example of a complex front-door in Example 6
 
-# Load required library
+# Load required libraries
 library(mvtnorm)
 library(bnlearn)
 
