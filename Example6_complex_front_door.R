@@ -191,10 +191,14 @@ identification_sum(a_value_def = 0, c2_value_def = 1, y_value_def = 1) # should 
 identification_sum(a_value_def = 0, c2_value_def = 0, y_value_def = 1) # should be close to mean(y0)
 mean(y0)
 
-
-
-
-
-
-
-
+# Identification expression provided by causaleffect R package 
+# library(causaleffect)
+# library(igraph)
+# g <- graph.formula(c_1 -+ c_2, c_2 -+ c_3, c_3 -+ a, a -+ z, z -+ y,
+#                    c_1 -+ c_3, c_3 -+ c_1,
+#                    c_1 -+ z, z -+ c_1,
+#                    c_3 -+ a, a -+ c_3,
+#                    a -+ y, y -+ a, simplify = FALSE)
+# g <- set.edge.attribute(g, "description", 6:13, "U")
+# cat(causal.effect("y", "a", G = g, prune = TRUE, simp = TRUE, primes = T))
+# 
