@@ -1,4 +1,4 @@
-# Author: Juha Karvanen/code: Tetiana Gorbach
+# Author: Juha Karvanen/Tetiana Gorbach
 # Date: 2024-05-17
 # This code presents an example of a DAg with a trpdoor variable
 
@@ -23,8 +23,8 @@ u_z_c1 <- rbinom(n, size = 1, prob = 0.5)
 u_c1_c3 <- rbinom(n, size = 1, prob = 0.5)
 u_a_c3 <- rbinom(n, size = 1, prob = 0.5)
 u_a_ya <- rbinom(n, size = 1, prob = 0.5)
-c1 <- rbinom(n, size = 1, prob = plogis(u_z_c1 + u_c1_c3)) #
-c2 <- rbinom(n, size = 1, prob = plogis(1 + c1)) #
+c1 <- rbinom(n, size = 1, prob = plogis(u_z_c1 + u_c1_c3)) 
+c2 <- rbinom(n, size = 1, prob = plogis(1 + c1)) 
 c3 <- rbinom(n, size = 1, prob = plogis(1 + c2 + u_a_c3 + u_c1_c3))
 
 # Generate binary treatment
@@ -36,7 +36,7 @@ z <- ifelse(a == 1, z1, z0)
 
 # Generate potential outcomes
 y1 <- rbinom(n, size = 1, prob = plogis(z1 + u_a_ya)) 
-y0 <- rbinom(n, size = 1, prob = plogis(-1 + z0 + u_a_ya))
+y0 <- rbinom(n, size = 1, prob = plogis(z0 + u_a_ya))
 
 
 # Generate observed outcome
@@ -91,25 +91,25 @@ py_given_c1_c2_c3_a_z <- function(y_value, c1_value, c2_value, c3_value, a_value
 }
 
 g1_a_c2 <- function(a_value, c2_value) {
-   pa_given_c1_c2(a_value = a_value, c1_value = 0, c2_value = c2_value) * pc1(0)  +
-   pa_given_c1_c2(a_value = a_value, c1_value = 1, c2_value = c2_value) * pc1(1)
+  pa_given_c1_c2(a_value = a_value, c1_value = 0, c2_value = c2_value) * pc1(0)  +
+    pa_given_c1_c2(a_value = a_value, c1_value = 1, c2_value = c2_value) * pc1(1)
 }
 
 g2_a_z_c2 <- function(a_value, z_value, c2_value) {
-    pz_given_c1_c2_a(z_value = z_value, c1_value = 0, c2_value = c2_value, 
-                               a_value = a_value) *
+  pz_given_c1_c2_a(z_value = z_value, c1_value = 0, c2_value = c2_value, 
+                   a_value = a_value) *
     pa_given_c1_c2(a_value = a_value, c1_value = 0, c2_value = c2_value) *
     pc1(0) +
     pz_given_c1_c2_a(z_value = z_value, c1_value = 1, c2_value = c2_value, 
-                                a_value = a_value) *
+                     a_value = a_value) *
     pa_given_c1_c2(a_value = a_value, c1_value = 1, c2_value = c2_value) *
     pc1(1)
 }
 
 
 g3_a_z_c2_c3 <- function(a_value, z_value, c2_value, c3_value) {
-    pz_given_c1_c2_c3_a(z_value = z_value, c1_value = 0, c2_value = c2_value, 
-                        c3_value = c3_value, a_value = a_value) *
+  pz_given_c1_c2_c3_a(z_value = z_value, c1_value = 0, c2_value = c2_value, 
+                      c3_value = c3_value, a_value = a_value) *
     pa_given_c1_c2_c3(a_value = a_value, 
                       c1_value = 0, c2_value = c2_value, c3_value = c3_value) *
     pc3_given_c1_c2(c3_value = c3_value, c1_value = 0, c2_value = c2_value) *
@@ -117,71 +117,70 @@ g3_a_z_c2_c3 <- function(a_value, z_value, c2_value, c3_value) {
     pz_given_c1_c2_c3_a(z_value = z_value, c1_value = 1, c2_value = c2_value, 
                         c3_value = c3_value, a_value = a_value) *
     pa_given_c1_c2_c3(a_value = a_value, 
-                   c1_value = 1, c2_value = c2_value, c3_value = c3_value) *
+                      c1_value = 1, c2_value = c2_value, c3_value = c3_value) *
     pc3_given_c1_c2(c3_value = c3_value, c1_value = 1, c2_value = c2_value) *
     pc1(1) 
 }
 
 
 g4_a_c2_c3 <- function(a_value,  c2_value, c3_value) {
-    pa_given_c1_c2_c3(a_value = a_value, 
-                      c1_value = 0, c2_value = c2_value, c3_value = c3_value) *
+  pa_given_c1_c2_c3(a_value = a_value, 
+                    c1_value = 0, c2_value = c2_value, c3_value = c3_value) *
     pc3_given_c1_c2(c3_value = c3_value, c1_value = 0, c2_value = c2_value) *
     pc1(0)  +
     pa_given_c1_c2_c3(a_value = a_value, 
-                   c1_value = 1, c2_value = c2_value, c3_value = c3_value) *
+                      c1_value = 1, c2_value = c2_value, c3_value = c3_value) *
     pc3_given_c1_c2(c3_value = c3_value, c1_value = 1, c2_value = c2_value) *
     pc1(1) 
 }
 
 g5_y_a_z_c2_c3 <- function(y_value, a_value, z_value, c2_value, c3_value) {
-   py_given_c1_c2_c3_a_z(y_value = y_value, c1_value = 0, 
-                         c2_value = c2_value, c3_value = c3_value, a_value = a_value, z_value = z_value) *
-   pz_given_c1_c2_c3_a(z_value = z_value, c1_value = 0, c2_value = c2_value, 
-                      c3_value = c3_value, a_value = a_value) *
-   pa_given_c1_c2_c3(a_value = a_value, 
+  py_given_c1_c2_c3_a_z(y_value = y_value, c1_value = 0, 
+                        c2_value = c2_value, c3_value = c3_value, a_value = a_value, z_value = z_value) *
+    pz_given_c1_c2_c3_a(z_value = z_value, c1_value = 0, c2_value = c2_value, 
+                        c3_value = c3_value, a_value = a_value) *
+    pa_given_c1_c2_c3(a_value = a_value, 
                       c1_value = 0, c2_value = c2_value, c3_value = c3_value) *
-   pc3_given_c1_c2(c3_value = c3_value, c1_value = 0, c2_value = c2_value) *
-   pc1(0)  +
-   py_given_c1_c2_c3_a_z(y_value = y_value, c1_value = 1, 
+    pc3_given_c1_c2(c3_value = c3_value, c1_value = 0, c2_value = c2_value) *
+    pc1(0)  +
+    py_given_c1_c2_c3_a_z(y_value = y_value, c1_value = 1, 
                           c2_value = c2_value, c3_value = c3_value, a_value = a_value, z_value = z_value) *
-   pz_given_c1_c2_c3_a(z_value = z_value, c1_value = 1, c2_value = c2_value, 
+    pz_given_c1_c2_c3_a(z_value = z_value, c1_value = 1, c2_value = c2_value, 
                         c3_value = c3_value, a_value = a_value ) *
-   pa_given_c1_c2_c3(a_value = a_value, 
-                   c1_value = 1, c2_value = c2_value, c3_value = c3_value) *
-   pc3_given_c1_c2(c3_value = c3_value, c1_value = 1, c2_value = c2_value) *
-   pc1(1) 
+    pa_given_c1_c2_c3(a_value = a_value, 
+                      c1_value = 1, c2_value = c2_value, c3_value = c3_value) *
+    pc3_given_c1_c2(c3_value = c3_value, c1_value = 1, c2_value = c2_value) *
+    pc1(1) 
 }
 
 # Initialize the sum
-identification_sum <- function(a_value_def, c2_value_def, y_value_def ){
-  sum_over_a <- 0
-  sum_over_z_c3 <- 0
+identification_sum <- function(a_value_def,c2_value_def, y_value_def ){
+  sum_outer <- 0
   # Loop over all combinations of a, z and c3 in {0, 1}
     for (z_value in c(0, 1)) {
       for (c3_value in c(0, 1)){
+        sum_f <- 0
         for (a_value in c(0, 1)) {
-        sum_over_a <- sum_over_a + g5_y_a_z_c2_c3(y_value = y_value_def, 
-                                        a_value = a_value, 
-                                        z_value = z_value, 
-                                        c2_value = c2_value_def, 
-                                        c3_value = c3_value)*
-          g4_a_c2_c3(a_value = a_value,
-                     c2_value = c2_value_def, 
-                     c3_value = c3_value)/
-          g3_a_z_c2_c3(a_value = a_value, 
-                       z_value = z_value, 
+          sum_f <- sum_f + g5_y_a_z_c2_c3(y_value = y_value_def, 
+                                          a_value = a_value, 
+                                          z_value = z_value, 
+                                          c2_value = c2_value_def, 
+                                          c3_value = c3_value)*
+            g4_a_c2_c3(a_value = a_value,
                        c2_value = c2_value_def, 
-                       c3_value = c3_value) 
+                       c3_value = c3_value)/
+            g3_a_z_c2_c3(a_value = a_value, 
+                         z_value = z_value, 
+                         c2_value = c2_value_def, 
+                         c3_value = c3_value) 
         }
-        sum_over_z_c3 <- sum_over_z_c3 + sum_over_a*g2_a_z_c2(a_value = a_value_def,
-                                                              z_value = z_value, 
-                                                              c2_value = c2_value_def)
+        sum_outer <- sum_outer +
+        g2_a_z_c2(a_value = a_value_def, 
+                  z_value = z_value, 
+                  c2_value = c2_value_def) * sum_f
       }
-      
-  }
-  sum_over_z_c3/g1_a_c2(a_value = a_value_def, 
-                        c2_value = c2_value_def)
+    }
+  sum_outer/g1_a_c2(a_value = a_value_def, c2_value = c2_value_def)
 }
 
 identification_sum(a_value_def = 1, c2_value_def = 1, y_value_def = 1) # should be close to mean(y1)
