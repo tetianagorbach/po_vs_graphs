@@ -1,12 +1,12 @@
 # Author: Ingeborg Waernbaum
 # Date: 2023-11-08
-# This code presents an example on multivariate dependency structures with a
+# This code presents an example on multivariate dependency structures in Example 3 with a
 # deterministic relationships between the variables that cannot be presented as a DAG.
 # Generate data with a binary treatment, continuous first mediator and dichotomized subsequent mediator
 # no confounding
 
-# Load required library
-library(mvtnorm) 
+# Load required libraries
+library(mvtnorm)
 library(bnlearn)
 
 # Generate data -----------------------------------------------------------
@@ -18,15 +18,13 @@ n <- 1000000
 errors <- rmvnorm(n, sigma = diag(3))
 # Generate confounders
 c1 <- 3 + errors[, 1]
-c2 <- 2*as.numeric(c1 >= 3)
-# Generate binary treatment that depends on c2
+c2 <- 2 * as.numeric(c1 >= 3)
+# Generate a binary treatment that depends on c1 and c2
 a <- rbinom(n, size = 1, prob = plogis(c1 + c2))
-
 # Generate potential outcomes
 y1 <- 4 + c1 + c2 + errors[, 2]
 y0 <- 2 + c1 + c2 + errors[, 3]
-
-# Generate observed outcome
+# Generate the observed outcome
 y <- ifelse(a == 1, y1, y0)
 
 # Average treatment effect is equal to total effect of Ey1 - Ey0 = 4 + Ec1 - (2 + Ec2) = 4 - 2  = 2
@@ -56,6 +54,3 @@ ci.test(y1, as.numeric(a), data.frame(c1, c2)) # y1 is independent of a given c1
 
 # Average causal effect can be consistently estimated by a linear regression: --------
 lm(y ~ a + c1 + c2)
-
-
-
