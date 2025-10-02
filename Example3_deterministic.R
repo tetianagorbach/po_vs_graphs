@@ -1,9 +1,6 @@
-# Author: Ingeborg Waernbaum
-# Date: 2023-11-08
 # This code presents an example on multivariate dependency structures in Example 3 with a
 # deterministic relationships between the variables that cannot be presented as a DAG.
-# Generate data with a binary treatment, continuous first mediator and dichotomized subsequent mediator
-# no confounding
+
 
 # Load required libraries
 library(mvtnorm)
@@ -11,19 +8,21 @@ library(bnlearn)
 
 # Generate data -----------------------------------------------------------
 # Set a seed for reproducibility
-set.seed(2911)
+set.seed(291111)
 # Set the sample size
 n <- 1000000
 # Define confounders c1, c2 with a deterministic relationship
-errors <- rmvnorm(n, sigma = diag(3))
+errors <- rmvnorm(n, sigma = diag(4))
 # Generate confounders
-c1 <- 3 + errors[, 1]
-c2 <- 2 * as.numeric(c1 >= 3)
+c2 <- errors[, 1]
+c3 <- errors[, 2]
+c1 <- c2 + c3
+c4 <- c2 - c3
 # Generate a binary treatment that depends on c1 and c2
-a <- rbinom(n, size = 1, prob = plogis(c1 + c2))
+a <- rbinom(n, size = 1, prob = plogis(c1))
 # Generate potential outcomes
-y1 <- 4 + c1 + c2 + errors[, 2]
-y0 <- 2 + c1 + c2 + errors[, 3]
+y1 <- 4 + c4 + errors[, 3]
+y0 <- 2 + c4 + errors[, 4]
 # Generate the observed outcome
 y <- ifelse(a == 1, y1, y0)
 
@@ -31,26 +30,23 @@ y <- ifelse(a == 1, y1, y0)
 mean(y1) - mean(y0)
 
 
-# Estimate DAGs from the observed and potential outcomes data -------------
-# Estimate a graph from the observed data
-df <- as.data.frame(cbind(a, c1, c2, y))
+
+# Check ignorability ------------------------------------------------------
+ci.test(y0, as.numeric(a), data.frame(c2, c3)) # y0 is independent of a given c4: weak unconfoundedness is fulfilled
+ci.test(y1, as.numeric(a), data.frame(c2, c3)) # y0 is independent of a given c4: weak unconfoundedness is fulfilled
+
+
+# Average causal effect can be consistently estimated by a linear regression: --------
+lm(y ~ a + c2 + c3)
+lm(y ~ a + c4)
+lm(y ~ a + c1)
+
+
+# Constructing graphs
+df <- as.data.frame(cbind(a, c1, c2, c3, c4,   y))
 cpdag <- pc.stable(df)
 # Plot the graph to visualize the inferred causal relationships
 plot(cpdag)
 
 
-# Drawing a graph from the unobserved potential outcomes and the treatment variable (corresponding to the SWIG)
-# not a valid SWIG due to the deterministic function c2 of c1!
-df2 <- as.data.frame(cbind(a, c1, c2, y1))
-cpdag2 <- pc.stable(df2)
-# Plot the graph to visualize the inferred causal relationships
-plot(cpdag2)
 
-
-
-# Check ignorability ------------------------------------------------------
-ci.test(y0, as.numeric(a), data.frame(c1, c2)) # y0 is independent of a given c1, c2: weak unconfoundedness is fulfilled
-ci.test(y1, as.numeric(a), data.frame(c1, c2)) # y1 is independent of a given c1, c2: weak unconfoundedness is fulfilled
-
-# Average causal effect can be consistently estimated by a linear regression: --------
-lm(y ~ a + c1 + c2)
