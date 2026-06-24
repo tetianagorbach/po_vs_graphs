@@ -17,7 +17,12 @@ n <- 1000000
 u1 <- rbinom(n, size = 1, prob = 0.6)
 u2 <- rbinom(n, size = 1, prob = 0.4)
 # Generate C that leads to M-bias
-c <- (u1 + u2) %% 2
+# c <- (u1 + u2) %% 2
+pc <- ifelse((u1 + u2) %% 2 == 1, 0.95, 0.05)
+c <- rbinom(n, 1, pc)
+
+mean(c) # should be approx 0.5
+
 # Generate binary treatment A  that depends on u1
 a <- rbinom(n, size = 1, prob = 0.1 + 0.8 * u1)
 # Generate potential outcomes that depend on u2
@@ -25,19 +30,19 @@ y1 <- numeric(n)
 y0 <- numeric(n)
 y1[u2 == 1] <- rbinom(sum(u2 == 1),
   size = 1,
-  prob = 0.9
+  prob = 0.1
 )
 y1[u2 == 0] <- rbinom(sum(u2 == 0),
   size = 1,
-  prob = 0.1
+  prob = 0.9
 )
 y0[u2 == 1] <- rbinom(sum(u2 == 1),
   size = 1,
-  prob = 0.1
+  prob = 0.9
 )
 y0[u2 == 0] <- rbinom(sum(u2 == 0),
   size = 1,
-  prob = 0.9
+  prob = 0.1
 )
 # Define the observed outcome
 y <- ifelse(a == 1, y1, y0)
@@ -64,7 +69,6 @@ mean(y0)
 mean(y[a == 0 & c == 1]) * mean(c) + mean(y[a == 0 & c == 0]) * (1 - mean(c))
 
 
-
 # Estimation -------------------------------------------------------------
 # Average treatment effect is equal to
 mean(y1) - mean(y0)
@@ -73,3 +77,11 @@ lm(y ~ a + c)
 
 mean(y[a == 1 & c == 1]) * mean(c) + mean(y[a == 1 & c == 0]) * (1 - mean(c)) -
   mean(y[a == 0 & c == 1]) * mean(c) - mean(y[a == 0 & c == 0]) * (1 - mean(c))
+
+# Analytical expression for covariate adjustment
+# P(Y=1 | C=1,A=1)P(C=1) + P(Y=1 | C=0,A=1)P(C=0)  - \left( P(Y=0 | C=1,A=0)P(C=1) + P(Y=0 | C=0,A=0)P(C=0)\right) .
+# Each term in numerators is P(U_1=u_1, U_2 = u_2, C=c, A=a, Y(a) = 1 ), denominators  - P(U_1=u_1, U_2 = u_2, C=c, A=a), summations are over the combinations of U_1, U_2 values
+(0.4 * 0.6 * 0.05 * 0.1 * 0.9 + 0.6 * 0.6 * 0.95 * 0.9 * 0.9 + 0.4 * 0.4 * 0.95 * 0.1 * 0.1 + 0.6 * 0.4 * 0.05 * 0.9 * 0.1) / (0.4 * 0.6 * 0.05 * 0.1 + 0.6 * 0.6 * 0.95 * 0.9 + 0.4 * 0.4 * 0.95 * 0.1 + 0.6 * 0.4 * 0.05 * 0.9) * 0.518 +
+(0.4 * 0.6 * 0.95 * 0.1 * 0.9 + 0.6 * 0.6 * 0.05 * 0.9 * 0.9 + 0.4 * 0.4 * 0.05 * 0.1 * 0.1 + 0.6 * 0.4 * 0.95 * 0.9 * 0.1) / (0.4 * 0.6 * 0.95 * 0.1 + 0.6 * 0.6 * 0.05 * 0.9 + 0.4 * 0.4 * 0.05 * 0.1 + 0.6 * 0.4 * 0.95 * 0.9) * (1 - 0.518) -
+(0.4 * 0.6 * 0.05 * 0.9 * 0.1 + 0.6 * 0.6 * 0.95 * 0.1 * 0.1 + 0.4 * 0.4 * 0.95 * 0.9 * 0.9 + 0.6 * 0.4 * 0.05 * 0.1 * 0.9) / (0.4 * 0.6 * 0.05 * 0.9 + 0.6 * 0.6 * 0.95 * 0.1 + 0.4 * 0.4 * 0.95 * 0.9 + 0.6 * 0.4 * 0.05 * 0.1) * 0.518 -
+(0.4 * 0.6 * 0.95 * 0.9 * 0.1 + 0.6 * 0.6 * 0.05 * 0.1 * 0.1 + 0.4 * 0.4 * 0.05 * 0.9 * 0.9 + 0.6 * 0.4 * 0.95 * 0.1 * 0.9) / (0.4 * 0.6 * 0.95 * 0.9 + 0.6 * 0.6 * 0.05 * 0.1 + 0.4 * 0.4 * 0.05 * 0.9 + 0.6 * 0.4 * 0.95 * 0.1) * (1 - 0.518)
